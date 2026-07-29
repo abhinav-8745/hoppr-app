@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hoppr — Join the Game</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --turf:#1B6B3A;
+  --turf-dark:#0F4023;
+  --chalk:#F7F5EF;
+  --lime:#D6FF3D;
+  --coral:#FF5A4E;
+  --ink:#0E1F17;
+  --line: rgba(247,245,239,0.18);
+  --line-strong: rgba(247,245,239,0.32);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Inter',sans-serif;
+  background:
+    radial-gradient(circle at 20% 10%, #143d24 0%, transparent 45%),
+    linear-gradient(180deg,#0c1a12 0%, #0a140e 100%);
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px 12px;
+  color:var(--chalk);
+}
+.phone{
+  width:390px;
+  max-width:100%;
+  min-height:760px;
+  background:var(--ink);
+  border-radius:36px;
+  border:1px solid var(--line-strong);
+  box-shadow:0 30px 80px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.03);
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.court-lines{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0.06;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 38px, var(--chalk) 38px 39px),
+    repeating-linear-gradient(90deg, transparent 0 38px, var(--chalk) 38px 39px);
+  z-index:0;
+}
+.topbar{
+  padding:22px 20px 14px;
+  position:relative;
+  z-index:1;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, var(--turf) 0%, var(--turf-dark) 100%);
+}
+.logo{
+  font-family:'Archivo Black',sans-serif;
+  font-size:26px;
+  letter-spacing:1px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.logo .dot{width:10px;height:10px;background:var(--lime);border-radius:50%;box-shadow:0 0 12px var(--lime);}
+.tagline{font-size:12px;color:rgba(247,245,239,0.7);margin-top:2px;font-family:'Space Mono',monospace;letter-spacing:0.5px;}
+.content{
+  flex:1;
+  overflow-y:auto;
+  position:relative;
+  z-index:1;
+  padding:16px 16px 90px;
+}
+.content::-webkit-scrollbar{width:0;}
+
+.section-title{
+  font-family:'Archivo Black',sans-serif;
+  font-size:13px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--lime);
+  margin:10px 2px 12px;
+}
+
+.game-card{
+  background:rgba(247,245,239,0.04);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:12px;
+  cursor:pointer;
+  transition:transform .15s ease, border-color .15s ease;
+  position:relative;
+  overflow:hidden;
+}
+.game-card:hover{transform:translateY(-2px); border-color:var(--line-strong);}
+.game-card:active{transform:translateY(0px) scale(0.99);}
+.game-card .stub-edge{
+  position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--coral);
+}
+.game-card.full .stub-edge{background:rgba(247,245,239,0.25);}
+.gc-top{display:flex; justify-content:space-between; align-items:flex-start;}
+.gc-sport{font-size:22px;}
+.gc-name{font-family:'Archivo Black',sans-serif; font-size:16px; margin:6px 0 2px;}
+.gc-meta{font-size:12.5px; color:rgba(247,245,239,0.65); font-family:'Space Mono',monospace;}
+.gc-when{font-size:12px; color:var(--lime); font-family:'Space Mono',monospace; text-align:right;}
+
+.slotbar{display:flex; gap:4px; margin:12px 0 10px;}
+.slot-dot{flex:1; height:7px; border-radius:4px; background:rgba(247,245,239,0.12);}
+.slot-dot.filled{background:var(--lime);}
+.slot-dot.filled.warn{background:var(--coral);}
+
+.gc-bottom{display:flex; justify-content:space-between; align-items:center;}
+.count-text{font-family:'Space Mono',monospace; font-size:13px; color:var(--chalk);}
+
+.btn{
+  font-family:'Archivo Black',sans-serif;
+  font-size:12.5px;
+  letter-spacing:0.5px;
+  padding:9px 16px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  text-transform:uppercase;
+  transition: transform .1s ease, filter .15s ease;
+}
+.btn:active{transform:scale(0.96);}
+.btn-primary{background:var(--lime); color:var(--ink);}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-secondary{background:transparent; color:var(--chalk); border:1px solid var(--line-strong);}
+.btn-coral{background:var(--coral); color:var(--chalk);}
+.btn-full{width:100%;}
+.btn-ghost{background:transparent; color:rgba(247,245,239,0.55); border:none; text-transform:none; font-family:'Inter'; font-size:13px; padding:6px;}
+
+.empty{
+  text-align:center; padding:60px 20px; color:rgba(247,245,239,0.5);
+}
+.empty .emoji{font-size:40px; margin-bottom:10px;}
+
+.fab{
+  position:absolute; right:18px; bottom:88px; z-index:5;
+  width:56px; height:56px; border-radius:50%;
+  background:var(--coral); color:var(--chalk);
+  font-size:26px; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 24px rgba(255,90,78,0.45);
+}
+.fab:active{transform:scale(0.94);}
+
+.bottomnav{
+  position:absolute; left:0; right:0; bottom:0; z-index:5;
+  display:flex; border-top:1px solid var(--line);
+  background:rgba(10,20,14,0.92); backdrop-filter:blur(6px);
+}
+.navbtn{flex:1; text-align:center; padding:12px 0 10px; cursor:pointer; color:rgba(247,245,239,0.5); font-size:11px; font-family:'Space Mono',monospace;}
+.navbtn .ni{font-size:19px; display:block; margin-bottom:2px;}
+.navbtn.active{color:var(--lime);}
+
+/* forms */
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:0.8px; color:rgba(247,245,239,0.55); margin-bottom:6px; font-family:'Space Mono',monospace;}
+.field input, .field select, .field textarea{
+  width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line-strong);
+  background:rgba(247,245,239,0.05); color:var(--chalk); font-size:14px; font-family:'Inter';
+}
+.field textarea{resize:vertical; min-height:60px;}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--lime); outline-offset:1px;}
+.row2{display:flex; gap:10px;}
+.row2 > .field{flex:1;}
+
+.backrow{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.backbtn{background:none; border:none; color:var(--chalk); font-size:20px; cursor:pointer; padding:4px 8px 4px 0;}
+.pagetitle{font-family:'Archivo Black',sans-serif; font-size:17px;}
+
+.detail-hero{
+  background:linear-gradient(160deg, rgba(214,255,61,0.1), transparent 60%);
+  border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:16px;
+}
+.dh-sport{font-size:34px;}
+.dh-title{font-family:'Archivo Black',sans-serif; font-size:20px; margin:8px 0 4px;}
+.dh-venue{font-size:13px; color:rgba(247,245,239,0.7);}
+.dh-when{margin-top:10px; display:inline-block; background:rgba(214,255,61,0.12); color:var(--lime); font-family:'Space Mono',monospace; font-size:12px; padding:5px 10px; border-radius:8px;}
+
+.playerlist{margin:14px 0;}
+.player-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line);}
+.avatar{width:32px; height:32px; border-radius:50%; background:var(--turf); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; flex-shrink:0;}
+.player-row .pname{font-size:13.5px; flex:1;}
+.player-row .ptag{font-size:10.5px; color:rgba(247,245,239,0.4); font-family:'Space Mono',monospace;}
+.slot-empty{color:rgba(247,245,239,0.35); font-size:13px; font-style:italic;}
+
+.confirm-wrap{text-align:center; padding:30px 10px;}
+.stamp{
+  display:inline-block; border:3px solid var(--lime); color:var(--lime);
+  font-family:'Archivo Black',sans-serif; font-size:20px; padding:14px 22px; border-radius:12px;
+  transform:rotate(-4deg); margin-bottom:18px;
+}
+.linkbox{
+  background:rgba(247,245,239,0.05); border:1px dashed var(--line-strong); border-radius:10px;
+  padding:12px; font-family:'Space Mono',monospace; font-size:13px; word-break:break-all; margin:12px 0;
+}
+.sharebtns{display:flex; gap:8px; margin-top:10px;}
+.sharebtns .btn{flex:1;}
+
+.toast{
+  position:absolute; left:50%; bottom:100px; transform:translateX(-50%);
+  background:var(--lime); color:var(--ink); font-family:'Space Mono',monospace; font-size:12.5px;
+  padding:10px 16px; border-radius:10px; z-index:20; box-shadow:0 8px 20px rgba(0,0,0,0.4);
+  opacity:0; transition:opacity .25s ease; pointer-events:none;
+}
+.toast.show{opacity:1;}
+
+.adminlist-actions{display:flex; gap:6px;}
+.iconbtn{background:none; border:1px solid var(--line-strong); color:var(--chalk); border-radius:8px; padding:5px 8px; cursor:pointer; font-size:12px;}
+.iconbtn:hover{border-color:var(--coral); color:var(--coral);}
+
+.status-pill{font-family:'Space Mono',monospace; font-size:10.5px; text-transform:uppercase; padding:3px 8px; border-radius:20px; letter-spacing:0.5px;}
+.status-open{background:rgba(214,255,61,0.15); color:var(--lime);}
+.status-full{background:rgba(255,90,78,0.18); color:var(--coral);}
+.status-cancelled{background:rgba(247,245,239,0.1); color:rgba(247,245,239,0.5);}
+.status-completed{background:rgba(247,245,239,0.1); color:rgba(247,245,239,0.6);}
+
+.loading{padding:60px 20px; text-align:center; color:rgba(247,245,239,0.5); font-family:'Space Mono',monospace; font-size:13px;}
+.notice{font-size:11px; color:rgba(247,245,239,0.4); text-align:center; margin-top:8px; line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="court-lines"></div>
+  <div class="topbar">
+    <div class="logo"><span class="dot"></span>HOPPR</div>
+    <div class="tagline">what game can you join right now?</div>
+  </div>
+  <div class="content" id="content"></div>
+  <button class="fab" id="fab" title="Host a game">+</button>
+  <div class="bottomnav">
+    <div class="navbtn active" data-nav="home"><span class="ni">🏟️</span>Games</div>
+    <div class="navbtn" data-nav="mine"><span class="ni">🎟️</span>My Games</div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ---- 1. PASTE YOUR FIREBASE CONFIG HERE (see README.md) ----
+const firebaseConfig = {
+  apiKey: "AIzaSyAWA5dzkaOEPOorR9bQfjH9raCA1vOa1CI",
+  authDomain: "hoppr-app-6d091.firebaseapp.com",
+  projectId: "hoppr-app-6d091",
+  storageBucket: "hoppr-app-6d091.firebasestorage.app",
+  messagingSenderId: "799749561674",
+  appId: "1:799749561674:web:3668a062da11395c60f5b3"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const gamesCol = collection(db, 'games');
+// ----------------------------------------------------------
+
+const SPORT_EMOJI = {Badminton:'🏸',Football:'⚽',Tennis:'🎾',Cricket:'🏏',Basketball:'🏀',Volleyball:'🏐','Table Tennis':'🏓'};
+const MY_HOSTED_KEY = 'hoppr-my-hosted-games';
+const MY_JOINED_KEY = 'hoppr-my-joined-games';
+
+let state = { view:'home', games:[], myHosted:[], myJoined:[], activeGameId:null, joinAsWaitlist:false };
+let hashApplied = false;
+
+function emoji(sport){ return SPORT_EMOJI[sport] || '🏆'; }
+function genId(){ return Array.from({length:6},()=>('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*33)])).join(''); }
+function initials(name){ return (name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+function fmtDate(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});}catch(e){return d;} }
+function shareUrlFor(id){ return window.location.href.split('#')[0] + '#g/' + id; }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ---- personal (per-browser) data: which games you host / joined ----
+function loadLocal(){
+  try{ state.myHosted = JSON.parse(localStorage.getItem(MY_HOSTED_KEY) || '[]'); }catch(e){ state.myHosted = []; }
+  try{ state.myJoined = JSON.parse(localStorage.getItem(MY_JOINED_KEY) || '[]'); }catch(e){ state.myJoined = []; }
+}
+function saveHosted(){ try{ localStorage.setItem(MY_HOSTED_KEY, JSON.stringify(state.myHosted)); }catch(e){} }
+function saveJoined(){ try{ localStorage.setItem(MY_JOINED_KEY, JSON.stringify(state.myJoined)); }catch(e){} }
+
+// ---- shared data: the live games collection in Firestore ----
+function subscribeGames(){
+  const q = query(gamesCol, orderBy('createdAt','desc'));
+  onSnapshot(q, snap=>{
+    state.games = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    if(!hashApplied){ hashApplied = true; applyHashRoute(); }
+    render();
+  }, err=>{
+    console.error(err);
+    document.getElementById('content').innerHTML =
+      `<div class="loading">Couldn't connect to Firebase.<br>Check your firebaseConfig and Firestore rules — see README.md.</div>`;
+  });
+}
+
+async function saveGame(g){
+  try{
+    const {id, ...data} = g;
+    await setDoc(doc(db, 'games', id), data);
+  }catch(e){
+    console.error(e);
+    showToast('Could not save — check your connection');
+  }
+}
+
+async function createGame(gameWithoutId){
+  // avoid extremely unlikely code collisions
+  let id = genId();
+  while(state.games.some(g=>g.id===id)) id = genId();
+  const game = {id, ...gameWithoutId};
+  await setDoc(doc(db,'games', id), gameWithoutId);
+  return game;
+}
+
+function getGame(id){ return state.games.find(g=>g.id===id); }
+function isFull(g){ return g.players.length >= g.slots; }
+function isHostOf(id){ return state.myHosted.includes(id); }
+
+function applyHashRoute(){
+  const m = window.location.hash.match(/^#g\/([A-Za-z0-9]+)$/);
+  if(m){
+    const g = getGame(m[1]);
+    if(g){ state.activeGameId = g.id; state.view = 'detail'; return true; }
+  }
+  return false;
+}
+window.addEventListener('hashchange', ()=>{ if(applyHashRoute()) render(); });
+
+// ---- rendering (same UI as before) ----
+function render(){
+  document.querySelectorAll('.navbtn').forEach(n=>n.classList.toggle('active', n.dataset.nav === (state.view==='home'?'home':state.view==='mine'?'mine':'')));
+  const c = document.getElementById('content');
+  document.getElementById('fab').style.display = (state.view==='home'||state.view==='mine') ? 'flex':'none';
+  if(state.view==='home') return renderHome(c);
+  if(state.view==='mine') return renderMine(c);
+  if(state.view==='detail') return renderDetail(c);
+  if(state.view==='join') return renderJoin(c);
+  if(state.view==='confirm') return renderConfirm(c);
+  if(state.view==='create') return renderCreate(c);
+}
+
+function slotBarHtml(g){
+  let dots='';
+  for(let i=0;i<g.slots;i++){
+    const filled = i < g.players.length;
+    dots += `<div class="slot-dot ${filled?'filled':''}"></div>`;
+  }
+  return `<div class="slotbar">${dots}</div>`;
+}
+function statusPill(g){ return `<span class="status-pill status-${g.status}">${g.status}</span>`; }
+
+function gameCard(g){
+  const full = isFull(g) || g.status!=='open';
+  return `
+  <div class="game-card ${full?'full':''}" data-open="${g.id}">
+    <div class="stub-edge"></div>
+    <div class="gc-top">
+      <div>
+        <div class="gc-sport">${emoji(g.sport)}</div>
+        <div class="gc-name">${g.sport} · ${g.venue}</div>
+        <div class="gc-meta">${fmtDate(g.date)} · ${g.time}${g.price?(' · ₹'+g.price):' · Free'}</div>
+      </div>
+      <div class="gc-when">${statusPill(g)}</div>
+    </div>
+    ${slotBarHtml(g)}
+    <div class="gc-bottom">
+      <div class="count-text">${g.players.length}/${g.slots} players</div>
+      <button class="btn ${full?'btn-secondary':'btn-primary'}" data-open="${g.id}">${g.status!=='open' ? 'View' : (full?'Waitlist':'Join')}</button>
+    </div>
+  </div>`;
+}
+
+function emptyBlock(em,title,sub){
+  return `<div class="empty"><div class="emoji">${em}</div><div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:6px;">${title}</div><div style="font-size:12.5px;">${sub}</div></div>`;
+}
+function bindCardClicks(c){
+  c.querySelectorAll('[data-open]').forEach(el=>{
+    el.addEventListener('click',()=>{ state.activeGameId = el.dataset.open; state.view='detail'; render(); });
+  });
+}
+
+function renderHome(c){
+  const open = state.games.filter(g=>g.status==='open' || g.status==='full').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  c.innerHTML = `
+    <div class="section-title">Games Near You</div>
+    ${open.length ? open.map(gameCard).join('') : emptyBlock('🏸','No games yet','Be the first to host one — tap the + button.')}
+  `;
+  bindCardClicks(c);
+}
+
+function renderMine(c){
+  const hosted = state.games.filter(g=>state.myHosted.includes(g.id));
+  const joined = state.games.filter(g=>state.myJoined.some(j=>j.gameId===g.id));
+  c.innerHTML = `
+    <div class="section-title">Hosting</div>
+    ${hosted.length ? hosted.map(gameCard).join('') : emptyBlock('🎯','Nothing hosted yet','Create a game and share the link.')}
+    <div class="section-title" style="margin-top:22px;">Joined</div>
+    ${joined.length ? joined.map(gameCard).join('') : emptyBlock('🙌','No games joined','Find one on the Games tab.')}
+  `;
+  bindCardClicks(c);
+}
+
+function renderDetail(c){
+  const g = getGame(state.activeGameId);
+  if(!g){ state.view='home'; return render(); }
+  const full = isFull(g);
+  const host = isHostOf(g.id);
+  const alreadyJoined = state.myJoined.some(j=>j.gameId===g.id);
+  c.innerHTML = `
+    <div class="backrow"><button class="backbtn" data-back="1">←</button><div class="pagetitle">${g.sport}</div></div>
+    <div class="detail-hero">
+      <div class="dh-sport">${emoji(g.sport)}</div>
+      <div class="dh-title">${g.venue}</div>
+      <div class="dh-venue">${g.skillLevel||'All levels'} ${g.host?(' · Hosted by '+g.host):''}</div>
+      <span class="dh-when">${fmtDate(g.date)} · ${g.time}</span>
+      <div style="margin-top:8px;">${statusPill(g)}</div>
+      ${g.description?`<div style="margin-top:10px;font-size:13px;color:rgba(247,245,239,0.75);">${g.description}</div>`:''}
+    </div>
+    ${slotBarHtml(g)}
+    <div class="count-text" style="margin-bottom:10px;">${g.players.length}/${g.slots} players ${g.price?(' · ₹'+g.price+' per player'):' · Free'}</div>
+    <div class="playerlist">
+      ${g.players.map(p=>`<div class="player-row"><div class="avatar">${initials(p.name)}</div><div class="pname">${p.name}</div>${host?`<button class="iconbtn" data-remove="${p.id}">Remove</button>`:''}</div>`).join('')}
+      ${Array.from({length: Math.max(0,g.slots-g.players.length)}).map(()=>`<div class="player-row"><div class="avatar" style="background:rgba(247,245,239,0.08);"></div><div class="slot-empty">Available</div></div>`).join('')}
+    </div>
+    ${g.waitlist && g.waitlist.length ? `<div class="section-title">Waitlist (${g.waitlist.length})</div>` + g.waitlist.map(p=>`<div class="player-row"><div class="avatar" style="background:rgba(255,90,78,0.5);">${initials(p.name)}</div><div class="pname">${p.name}</div>${host?`<button class="iconbtn" data-promote="${p.id}">Promote</button>`:''}</div>`).join('') : ''}
+
+    ${g.status==='open' ? (
+      alreadyJoined ? `<div class="notice" style="margin-top:16px;">You're already in this game ✅</div>`
+      : `<button class="btn ${full?'btn-coral':'btn-primary'} btn-full" style="margin-top:16px;" data-join="1">${full?'Join Waitlist':'Join Game'}</button>`
+    ) : `<div class="notice" style="margin-top:16px;">This game is ${g.status}.</div>`}
+
+    <div class="section-title" style="margin-top:22px;">Share This Game</div>
+    <div class="notice" style="text-align:left; margin-bottom:8px;">Tap or send this link — it opens straight to this game.</div>
+    <a href="${shareUrlFor(g.id)}" class="linkbox" style="display:block; text-decoration:none; color:var(--lime); word-break:break-all;">${shareUrlFor(g.id)}</a>
+    <div class="notice" style="text-align:left; margin:8px 0 0;">Or share the code: <strong style="color:var(--chalk);">${g.id}</strong></div>
+    <div class="sharebtns" style="margin-top:10px;">
+      <button class="btn btn-secondary" data-copy="1">Copy Link</button>
+      <a class="btn btn-primary" style="text-decoration:none;text-align:center;" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Join my '+g.sport+' game at '+g.venue+'! '+shareUrlFor(g.id))}">WhatsApp</a>
+    </div>
+
+    ${host ? `
+      <div class="section-title" style="margin-top:22px;">Host Tools</div>
+      <div class="sharebtns">
+        ${g.status==='open' ? `<button class="btn btn-secondary" data-complete="1">Complete Game</button><button class="btn btn-coral" data-cancel="1">Cancel Game</button>` : ''}
+      </div>
+    `: ''}
+  `;
+  c.querySelector('[data-back]').addEventListener('click',()=>{ state.view='home'; render(); });
+  const joinBtn = c.querySelector('[data-join]');
+  if(joinBtn) joinBtn.addEventListener('click',()=>{ state.joinAsWaitlist = full; state.view='join'; render(); });
+  const copyBtn = c.querySelector('[data-copy]');
+  if(copyBtn) copyBtn.addEventListener('click',()=>{
+    navigator.clipboard.writeText(shareUrlFor(g.id)).then(()=>showToast('Link copied!')).catch(()=>showToast('Copy failed — select manually'));
+  });
+  const cancelBtn = c.querySelector('[data-cancel]');
+  if(cancelBtn) cancelBtn.addEventListener('click', async ()=>{ g.status='cancelled'; await saveGame(g); showToast('Game cancelled'); });
+  const completeBtn = c.querySelector('[data-complete]');
+  if(completeBtn) completeBtn.addEventListener('click', async ()=>{ g.status='completed'; await saveGame(g); showToast('Game marked complete'); });
+  c.querySelectorAll('[data-remove]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const pid = btn.dataset.remove;
+      g.players = g.players.filter(p=>p.id!==pid);
+      if(g.waitlist && g.waitlist.length){
+        const promoted = g.waitlist.shift();
+        g.players.push(promoted);
+        showToast(promoted.name+' promoted from waitlist!');
+      }
+      if(g.players.length < g.slots) g.status='open';
+      await saveGame(g);
+    });
+  });
+  c.querySelectorAll('[data-promote]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const pid = btn.dataset.promote;
+      const idx = g.waitlist.findIndex(p=>p.id===pid);
+      if(idx>-1 && g.players.length < g.slots){
+        const [p] = g.waitlist.splice(idx,1);
+        g.players.push(p);
+        if(g.players.length >= g.slots) g.status='full';
+        await saveGame(g);
+        showToast(p.name+' promoted!');
+      } else {
+        showToast('Game is full — remove a player first');
+      }
+    });
+  });
+}
+
+function renderJoin(c){
+  const g = getGame(state.activeGameId);
+  const waitlisted = state.joinAsWaitlist;
+  c.innerHTML = `
+    <div class="backrow"><button class="backbtn" data-back="1">←</button><div class="pagetitle">${waitlisted?'Join Waitlist':'Join Game'}</div></div>
+    <div class="notice" style="text-align:left;margin-bottom:14px;">${emoji(g.sport)} ${g.sport} at ${g.venue} · ${fmtDate(g.date)} ${g.time}</div>
+    <div class="field"><label>Name</label><input id="jname" placeholder="Your name" autocomplete="name"/></div>
+    <div class="field"><label>Mobile</label><input id="jmobile" placeholder="10-digit mobile number" inputmode="numeric" autocomplete="tel"/></div>
+    <div id="joinerr" style="color:var(--coral);font-size:12.5px;margin-bottom:10px;"></div>
+    <button class="btn btn-primary btn-full" data-confirm="1">${waitlisted?'Join Waitlist':'Confirm'}</button>
+  `;
+  c.querySelector('[data-back]').addEventListener('click',()=>{ state.view='detail'; render(); });
+  c.querySelector('[data-confirm]').addEventListener('click', async ()=>{
+    const name = c.querySelector('#jname').value.trim();
+    const mobile = c.querySelector('#jmobile').value.trim();
+    const err = c.querySelector('#joinerr');
+    if(!name){ err.textContent = 'Please enter your name.'; return; }
+    if(!mobile){ err.textContent = 'Please enter your mobile number.'; return; }
+    if(!/^[0-9+\-\s]{7,15}$/.test(mobile)){ err.textContent = 'Enter a valid mobile number.'; return; }
+    const player = {id:genId(), name, mobile, joinedAt:Date.now()};
+    if(waitlisted || isFull(g)){
+      g.waitlist = g.waitlist || [];
+      g.waitlist.push(player);
+    } else {
+      g.players.push(player);
+      if(g.players.length >= g.slots) g.status='full';
+    }
+    await saveGame(g);
+    state.myJoined.push({gameId:g.id, playerId:player.id});
+    saveJoined();
+    state.view='confirm';
+    state.joinAsWaitlist = waitlisted;
+    render();
+  });
+}
+
+function renderConfirm(c){
+  const g = getGame(state.activeGameId);
+  const waitlisted = state.joinAsWaitlist;
+  c.innerHTML = `
+    <div class="confirm-wrap">
+      <div class="stamp">${waitlisted ? "You're on the list" : "You're In!"}</div>
+      <div class="dh-title" style="margin-bottom:2px;">${emoji(g.sport)} ${g.sport} · ${g.venue}</div>
+      <div class="gc-meta">${fmtDate(g.date)} · ${g.time}</div>
+      ${waitlisted ? `<div class="notice" style="margin-top:12px;">We'll message you the moment a spot opens up.</div>` : ''}
+      <div class="notice">Share this so friends land right on this game.</div>
+      <a href="${shareUrlFor(g.id)}" class="linkbox" style="display:block; text-decoration:none; color:var(--lime); word-break:break-all;">${shareUrlFor(g.id)}</a>
+      <div class="sharebtns">
+        <button class="btn btn-secondary" data-copy="1">Copy Link</button>
+        <a class="btn btn-primary" style="text-decoration:none;text-align:center;" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Join me for '+g.sport+' at '+g.venue+'! '+shareUrlFor(g.id))}">Share on WhatsApp</a>
+      </div>
+      <button class="btn btn-ghost" data-done="1" style="margin-top:18px;">Back to Games</button>
+    </div>
+  `;
+  c.querySelector('[data-copy]').addEventListener('click',()=>{
+    navigator.clipboard.writeText(shareUrlFor(g.id)).then(()=>showToast('Link copied!')).catch(()=>{});
+  });
+  c.querySelector('[data-done]').addEventListener('click',()=>{ state.view='home'; render(); });
+}
+
+function renderCreate(c){
+  c.innerHTML = `
+    <div class="backrow"><button class="backbtn" data-back="1">←</button><div class="pagetitle">Host a Game</div></div>
+    <div class="field"><label>Sport</label>
+      <select id="c-sport">
+        ${Object.keys(SPORT_EMOJI).map(s=>`<option>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Venue</label><input id="c-venue" placeholder="e.g. Scottish High Courts"/></div>
+    <div class="row2">
+      <div class="field"><label>Date</label><input id="c-date" type="text" placeholder="e.g. 2026-08-02"/></div>
+      <div class="field"><label>Time</label><input id="c-time" type="text" placeholder="e.g. 7:00 PM"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Slots</label><input id="c-slots" type="number" min="2" max="40" value="4"/></div>
+      <div class="field"><label>Price (₹, optional)</label><input id="c-price" type="number" min="0" placeholder="0"/></div>
+    </div>
+    <div class="field"><label>Skill Level</label>
+      <select id="c-skill"><option>All levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Competitive</option></select>
+    </div>
+    <div class="field"><label>Host Name</label><input id="c-host" placeholder="Your name"/></div>
+    <div class="field"><label>Description (optional)</label><textarea id="c-desc" placeholder="Bring your own racquet, etc."></textarea></div>
+    <div id="createerr" style="color:var(--coral);font-size:12.5px;margin-bottom:10px;"></div>
+    <button class="btn btn-primary btn-full" data-submit="1">Create Game</button>
+  `;
+  c.querySelector('[data-back]').addEventListener('click',()=>{ state.view='home'; render(); });
+  c.querySelector('[data-submit]').addEventListener('click', async ()=>{
+    const sport = c.querySelector('#c-sport').value;
+    const venue = c.querySelector('#c-venue').value.trim();
+    const date = c.querySelector('#c-date').value.trim();
+    const time = c.querySelector('#c-time').value.trim();
+    const slots = parseInt(c.querySelector('#c-slots').value,10);
+    const price = parseInt(c.querySelector('#c-price').value,10) || 0;
+    const skillLevel = c.querySelector('#c-skill').value;
+    const host = c.querySelector('#c-host').value.trim();
+    const description = c.querySelector('#c-desc').value.trim();
+    const err = c.querySelector('#createerr');
+    if(!venue){ err.textContent = 'Please enter a venue.'; return; }
+    if(!date){ err.textContent = 'Please enter a date.'; return; }
+    if(!time){ err.textContent = 'Please enter a time.'; return; }
+    if(!slots || slots < 2){ err.textContent = 'Slots must be a number of 2 or more.'; return; }
+    const btn = c.querySelector('[data-submit]');
+    btn.disabled = true; btn.textContent = 'Creating…';
+    const game = await createGame({
+      sport, venue, date, time, slots, price, skillLevel, host, description,
+      status:'open', players:[], waitlist:[], createdAt: Date.now()
+    });
+    state.myHosted.push(game.id);
+    saveHosted();
+    state.activeGameId = game.id;
+    state.view='detail';
+    showToast('Game created — share the link!');
+    render();
+  });
+}
+
+document.getElementById('fab').addEventListener('click',()=>{ state.view='create'; render(); });
+document.querySelectorAll('.navbtn').forEach(nav=>{
+  nav.addEventListener('click',()=>{ state.view = nav.dataset.nav; render(); });
+});
+
+loadLocal();
+subscribeGames();
+</script>
+</body>
+</html>
